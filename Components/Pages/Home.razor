@@ -1,7 +1,78 @@
 ﻿@page "/"
-
+@page "/{sourceId:int?}"
+@page "/{search:string?}"
+@using System.Linq
+@using Applied2Reminder
+@using Microsoft.EntityFrameworkCore
 <PageTitle>Home</PageTitle>
 
-<h1>Hello, world!</h1>
+@* <CModal Source="@Source" /> *@
 
-Welcome to your new app.
+<main class="container flex h-full">
+    <div class="container flex flex-col w-full">
+        <h1 class="flex self-center text-5xl">Home</h1>
+        <div class="flex justify-center my-4 w-full">
+            <InputText @bind-Value="Search" placeholder="Search"
+                class="outline outline-slate-400 p-4 pe-16 rounded-full self-center w-1/2" />
+            <div class="flex">
+                <button
+                    class="absolute bg-white outline outline-slate-400 rounded-full size-14 text-3xl -translate-x-full z-10">🔎</button>
+                <button
+                    class="absolute bg-white outline outline-slate-400 rounded-full self-center size-24 text-4xl -translate-x-8">+</button>
+            </div>
+        </div>
+        <div class="container h-full">
+            @if (FilteredJobSources is not null || JobSources is not null)
+            {
+                <ul class="flex flex-row gap-10">
+                    @foreach (var source in PriorityCollection())
+                    {
+                        <li class="content-center rounded-full size-40 text-center text-xl shadow-lg"
+                            @onclick="()=> ShowDetails(source)" style="background-color:@(getColor());">
+                            @source.Name
+                        </li>
+                    }
+                </ul>
+            }
+        </div>
+    </div>
+</main>
+
+@code {
+    [Parameter] public string? Search { get; set; }
+    [Parameter] public int? SourceId { get; set; }
+    private JobSource? Source { get; set; }
+    private List<JobSource>? JobSources { get; set; }
+    private List<JobSource>? FilteredJobSources { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        using AppliedDbContext context = new();
+        JobSources = await context.JobSources.ToListAsync();
+    }
+
+    protected override void OnParametersSet()
+    {
+        if (Search is not null)
+        {
+            FilteredJobSources = JobSources?.Where(s => s.Name.Contains(Search, StringComparison.OrdinalIgnoreCase)).ToList();
+        }
+        else if (SourceId is not null)
+        {
+            Source = JobSources?.FirstOrDefault(s => s.Id == SourceId);
+        }
+    }
+
+    private void ShowDetails(JobSource source)
+    {
+        Source = source;
+        StateHasChanged();
+    }
+
+    private IEnumerable<JobSource> PriorityCollection()
+    => FilteredJobSources?.DistinctBy(f => f.Name)
+    ?? JobSources?.DistinctBy(s => s.Name)
+    ?? [];
+
+    string getColor() => $"hsl({new Random().Next(360)}, 100%, 85%)";
+}

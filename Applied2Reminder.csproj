@@ -6,6 +6,11 @@
     <ImplicitUsings>enable</ImplicitUsings>
   </PropertyGroup>
 
+  <Target Name="Tailwind" BeforeTargets="PostBuildEvent">
+    <Exec Command="npm install" />
+    <Exec Command="npm run build" />
+  </Target>
+
   <ItemGroup>
     <PackageReference Include="DotNetEnv" Version="3.0.0" />
     <PackageReference Include="Microsoft.EntityFrameworkCore" Version="8.0.4" />
