@@ -1,3 +1,5 @@
+using Bogus;
+using System.Linq;
 namespace Applied2Reminder;
 
 public static class Seed
@@ -7,35 +9,34 @@ public static class Seed
         using AppliedDbContext context = new();
         context.Database.EnsureDeleted();
         context.Database.EnsureCreated();
-        var applications = new List<Application>
+
+        Faker Faker = new();
+        var CompanyCount = 50;
+        var ApplicationCount = 50;
+
+        var SourceTypes = Enum.GetValues<JobSources>().ToList();
+
+        var FakeCompanies = Enumerable.Range(1, CompanyCount).Aggregate(new List<JobSource>(), (list, i) =>
         {
-            new() {
-                Name = "Junior Web Developer",
-                JobSource = new JobSource
-                {
-                    Name = "Unity Company",
-                    SourceType = JobSources.Company,
-                    Description = "A company that makes VR experiences in Unity.",
-                    Url = "https://www.unitycompany.com"
+            list.Add(new JobSource
+            {
+                Name = Faker.Company.CompanyName(),
+                Description = Faker.Company.CatchPhrase(),
+                SourceType = SourceTypes[Faker.Random.Int(0, SourceTypes.Count - 1)],
+                Url = Faker.Internet.Url()
+            });
+            return list;
+        });
 
-                },
-                JobDescription = "A Junior Web Developer. Keywords: .net, python, javascript, html, css",
-                JobUrl = "https://www.applied2reminder.com/job/junior-web-developer",
-            },
-            new() {
-                Name = "Senior Web Developer",
-                JobSource = new JobSource
-                {
-                    Name = "Dotnet Recruiter Company",
-                    SourceType = JobSources.Recruiter,
-                    Description = "Dotnet Recruiter Company",
-                    Url = "https://www.dotnetrecruitercompany.com"
+        var applications =
+            FakeCompanies.SelectMany(company => Enumerable.Range(1, ApplicationCount).Select(i => new Application
+            {
+                Name = Faker.Name.JobTitle(),
+                JobSource = company,
+                JobDescription = Faker.Lorem.Paragraph(),
+                JobUrl = Faker.Internet.Url()
+            })).ToList();
 
-                },
-                JobDescription = "A Senior Web Developer. Keywords: .net, devops, docker, angular, kubernetes, aws",
-                JobUrl = "https://www.applied2reminder.com/job/senior-web-developer",
-            }
-        };
         context.Applications.AddRange(applications);
         context.SaveChanges();
         context.Dispose();

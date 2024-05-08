@@ -2,31 +2,32 @@
 @using System.Linq
 @using Applied2Reminder
 @using Microsoft.EntityFrameworkCore
+@rendermode InteractiveServer
 <PageTitle>Home</PageTitle>
 
-@* <CompanyJobs Source="@Source" /> *@
+<CompanyJobs Source="@Source" ClearSourceCallback="@(()=> Source = null)" />
 
 <main class="container flex h-full">
     <div class="container flex flex-col w-full">
         <h1 class="flex self-center text-5xl">Home</h1>
         <div class="flex justify-center my-4 w-full">
-            <InputText @bind-Value="Search" placeholder="Search"
+            <InputText @bind-Value="Search" @oninput="SearchSource" placeholder="Search"
                 class="outline outline-slate-400 p-4 pe-16 rounded-full self-center w-1/2" />
-            <div class="flex">
+            <div class=" flex">
                 <button
                     class="absolute bg-white outline outline-slate-400 rounded-full size-14 text-3xl -translate-x-full z-10">🔎</button>
                 <button
                     class="absolute bg-white outline outline-slate-400 rounded-full self-center size-24 text-4xl -translate-x-8">+</button>
             </div>
         </div>
-        <div class="container h-full">
+        <div class="container flex h-full self-center">
             @if (FilteredJobSources is not null || JobSources is not null)
             {
-                <ul class="flex flex-row gap-10">
+                <ul class="align-content-start flex flex-row flex-wrap gap-10">
                     @foreach (var source in PriorityCollection())
                     {
-                        <li class="content-center cursor-pointer hover:cursor-pointer rounded-full size-40 text-center text-xl shadow-lg"
-                            @onclick="()=> ShowDetails(source)" style="background-color:@(getColor());">
+                        <li class="cursor-pointer flex m-auto place-content-center place-items-center rounded-full size-40 text-center text-xl shadow-lg"
+                            @onclick="@(()=> ShowDetails(source))" style="background-color:@(getColor());">
                             @source.Name
                         </li>
                     }
@@ -46,7 +47,7 @@
     protected override async Task OnInitializedAsync()
     {
         using AppliedDbContext context = new();
-        JobSources = await context.JobSources.ToListAsync();
+        JobSources = await context.JobSources.OrderBy(s => s.Name).ToListAsync();
     }
 
     protected override void OnParametersSet()
@@ -60,7 +61,9 @@
             Source = JobSources?.FirstOrDefault(s => s.Id == SourceId);
         }
     }
-
+    private void SearchSource()
+    => FilteredJobSources = !string.IsNullOrEmpty(Search) ? JobSources?.Where(s => s.Name.Contains(Search,
+    StringComparison.OrdinalIgnoreCase)).ToList() : null;
     private void ShowDetails(JobSource source)
     {
         Source = source;
@@ -72,5 +75,6 @@
     ?? JobSources?.DistinctBy(s => s.Name)
     ?? [];
 
-    string getColor() => $"hsl({new Random().Next(360)}, 100%, 85%)";
+    private string getColor()
+    => $"hsl({new Random().Next(360)}, 100%, 85%)";
 }
