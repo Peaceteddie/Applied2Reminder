@@ -6,12 +6,10 @@
             <dialog class="absolute flex place-self-center rounded-3xl size-2/3 top-20"
                 @onmouseenter="@((e) => IsInsideModal = true)" @onmouseleave="@((e) => IsInsideModal = false)" open>
                 <div class="flex flex-col p-4 pb-10 w-full">
-                    <h1 class="flex place-content-center text-center">@Source.Name</h1>
+                    <h1 class="flex place-content-center text-4xl text-center">@Source.Name</h1>
                     <div class="container flex flex-row size-full">
                         <div class="flex flex-col w-1/3">
-                            <h2 class="text-center text-3xl">Applications</h2>
-
-                            <div class="flex px-4 self-start">
+                            <div class="flex ms-6 self-center">
                                 <InputText @bind-Value="Search" placeholder="Search" @oninput="SearchApplications"
                                     class="outline outline-slate-400 p-4 pe-16 rounded-full self-center" />
 

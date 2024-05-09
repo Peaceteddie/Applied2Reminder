@@ -19,7 +19,20 @@ if (!app.Environment.IsDevelopment())
 }
 else
 {
-    Seed.Initialize();
+    var configuration = app.Configuration.AsEnumerable().ToList();
+    var seedData = configuration.FirstOrDefault(x => x.Key == "SeedData");
+    var clearData = configuration.FirstOrDefault(x => x.Key == "ClearData");
+
+    if (seedData.Value != null && bool.Parse(seedData.Value))
+    {
+        Seed.Initialize();
+    }
+    else if (clearData.Value != null && bool.Parse(clearData.Value))
+    {
+        Seed.Clear();
+    }
+    using AppliedDbContext db = new();
+    db.Database.EnsureCreated();
 }
 
 app.UseHttpsRedirection();
@@ -27,6 +40,4 @@ app.UseStaticFiles();
 app.UseAntiforgery();
 app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode();
-
-
 app.Run();
