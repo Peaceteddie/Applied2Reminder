@@ -14,25 +14,3 @@ public class AppliedDbContext : DbContext
     }
 
 }
-public class Application
-{
-    public int Id { get; set; }
-    public required string Name { get; set; }
-    public required JobSource JobSource { get; set; }
-    public string? JobDescription { get; set; }
-    public string? JobUrl { get; set; }
-}
-public class JobSource
-{
-    public int Id { get; set; }
-    public required string Name { get; set; }
-    public required JobSources SourceType { get; set; }
-    public string? Description { get; set; }
-    public string? Url { get; set; }
-}
-
-public enum JobSources
-{
-    Company,
-    Recruiter
-}

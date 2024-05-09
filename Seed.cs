@@ -32,9 +32,9 @@ public static class Seed
             FakeCompanies.SelectMany(company => Enumerable.Range(1, ApplicationCount).Select(i => new Application
             {
                 Name = Faker.Name.JobTitle(),
-                JobSource = company,
-                JobDescription = Faker.Lorem.Paragraph(),
-                JobUrl = Faker.Internet.Url()
+                Source = company,
+                Description = Faker.Lorem.Paragraph(),
+                Url = Faker.Internet.Url()
             })).ToList();
 
         context.Applications.AddRange(applications);

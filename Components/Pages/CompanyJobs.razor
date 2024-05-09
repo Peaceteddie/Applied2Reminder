@@ -1,63 +1,64 @@
 @using Microsoft.EntityFrameworkCore
 @if (Source is not null)
 {
-    <div class="absolute flex size-full z-20" style="background-color:#6666;"
-        @onclick="@((e) =>{if(!IsInsideModal){Source = null; ClearSourceCallback.InvokeAsync().Wait();}})">
-        <dialog class="absolute flex place-self-center rounded-3xl size-2/3 top-20"
-            @onmouseenter="@((e) => IsInsideModal = true)" @onmouseleave="@((e) => IsInsideModal = false)" open>
-            <div class="flex flex-col p-4 pb-10 w-full">
-                <h1 class="flex place-content-center text-center">@Source.Name</h1>
-                <div class="container flex flex-row size-full">
-                    <div class="flex flex-col w-1/3">
-                        <h2 class="text-center text-3xl">Applications</h2>
+        <Overlay class="flex"
+            @onclick="@((e) =>{if(!IsInsideModal){Source = null; ClearSourceCallback.InvokeAsync().Wait();}})">
+            <dialog class="absolute flex place-self-center rounded-3xl size-2/3 top-20"
+                @onmouseenter="@((e) => IsInsideModal = true)" @onmouseleave="@((e) => IsInsideModal = false)" open>
+                <div class="flex flex-col p-4 pb-10 w-full">
+                    <h1 class="flex place-content-center text-center">@Source.Name</h1>
+                    <div class="container flex flex-row size-full">
+                        <div class="flex flex-col w-1/3">
+                            <h2 class="text-center text-3xl">Applications</h2>
 
-                        <div class="flex px-4 self-start">
-                            <InputText @bind-Value="Search" placeholder="Search" @oninput="SearchApplications"
-                                class="outline outline-slate-400 p-4 pe-16 rounded-full self-center" />
+                            <div class="flex px-4 self-start">
+                                <InputText @bind-Value="Search" placeholder="Search" @oninput="SearchApplications"
+                                    class="outline outline-slate-400 p-4 pe-16 rounded-full self-center" />
 
-                            <div class=" flex">
-                                <button
-                                    class="absolute bg-white outline outline-slate-400 rounded-full size-14 text-3xl -translate-x-full z-10"
-                                    @onclick="SearchApplications">🔎</button>
+                                <div class=" flex">
+                                    <button
+                                        class="absolute bg-white outline outline-slate-400 rounded-full size-14 text-3xl -translate-x-full z-10"
+                                        @onclick="SearchApplications">🔎</button>
+                                </div>
                             </div>
-                        </div>
 
-                        <ul class="flex flex-col gap-4 items-center max-h-full overflow-y-auto py-5"
-                            style="direction:rtl;mask:linear-gradient(0deg, #0000, #000 5%, #000 95%, #0000);scrollbar-width:thin;">
+                            <ul class="flex flex-col gap-4 items-center max-h-full overflow-y-auto pe-4 py-5"
+                                style="direction:rtl;mask:linear-gradient(0deg, #0000, #000 5%, #000 95%, #0000);scrollbar-width:thin;">
                             @if (Applications is not null)
                             {
                                 int i = 0;
                                 @foreach (var application in PriorityCollection())
                                 {
-                                    <li class="content-center max-h-40 min-h-40 min-w-40 max-w-40 cursor-pointer rounded-full text-center text-xl shadow-lg"
-                                        @onclick="()=> ShowDetails(application)"
-                                        style="background-color:@(getColor(i++));direction:ltr;">
+                                                <li class="border-4 @(JobApplication == application ? "border-e-0":"") border-black cursor-pointer flex overflow-hidden ps-4 place-items-center place-self-end text-ellipsis text-nowrap text-start w-full"
+                                                    @onclick="()=> ShowDetails(application)" style="@(GetListItemStyle(i, application))">
                                         @application.Name
-                                    </li>
+                                                </li>
+                                    i++;
                                 }
                             }
-                        </ul>
-                    </div>
+                            </ul>
+                        </div>
 
-                    <div class="outline p-10 rounded-3xl size-full">
+                        <div class="outline p-10 rounded-3xl size-full" style="@(GetBackgroundColorStyle())">
                         @if (JobApplication is not null)
                         {
-                            <div>
-                                <h1>@JobApplication.Name</h1>
-                                <p>@JobApplication.JobDescription</p>
-                            </div>
+                                    <div>
+                                        <h1>@JobApplication.Name</h1>
+                                        <p>@JobApplication.Description</p>
+                                    </div>
                         }
+                        </div>
                     </div>
                 </div>
-            </div>
-        </dialog>
-    </div>
+            </dialog>
+        </Overlay>
 
-    <style>
-        body {
-            overflow: hidden;
-        }
-    </style>
+        <style>
+            li{
+                border-top-left-radius: 10rem;
+                border-bottom-left-radius: 10rem;
+            }
+        </style>
 }
 
 
@@ -66,32 +67,65 @@
     [Parameter] public EventCallback ClearSourceCallback { get; set; }
 
     bool IsInsideModal { get; set; }
-    private Timer? Timer { get; set; }
-    private string? Search { get; set; }
-    private ElementReference? Modal { get; set; }
-    private Application? JobApplication { get; set; }
-    private List<Application>? Applications { get; set; }
-    private List<Application>? FilteredApplications { get; set; }
+    Timer? Timer { get; set; }
+    string? Search { get; set; }
+    ElementReference? Modal { get; set; }
+    Application? JobApplication { get; set; }
+    List<Application>? Applications { get; set; }
+    List<Application>? FilteredApplications { get; set; }
 
     protected override async Task OnInitializedAsync()
     => await GetApplicationsAsync();
-    private async Task GetApplicationsAsync()
+    async Task GetApplicationsAsync()
     {
         if (Source is not null)
         {
             using AppliedDbContext context = new();
-            Applications = await context.Applications.Where(a => a.JobSource.Id == Source.Id).ToListAsync();
+            Applications = await context.Applications.Where(a => a.Source!.Id == Source.Id).ToListAsync();
         }
     }
     protected override async Task OnParametersSetAsync()
     => await GetApplicationsAsync();
-    private IEnumerable<Application> PriorityCollection()
-    => FilteredApplications ?? Applications ?? [];
-    private void ShowDetails(Application application)
-    => JobApplication = application;
+
+    List<Application> PriorityCollection()
+       => FilteredApplications
+       ?? Applications
+       ?? new List<Application>();
+
+    void ShowDetails(Application application)
+       => JobApplication = application;
+
     void SearchApplications()
-    => FilteredApplications = Search != null ? Applications?.Where(a => a.Name.Contains(Search,
-    StringComparison.OrdinalIgnoreCase)).ToList() : [];
-    private string getColor(int index)
-    => $"hsl({(index * 36) % 360}, 100%, 85%)";
+    => FilteredApplications = Search != null
+    ? Applications?
+    .Where(a => a.Name!.Contains(Search, StringComparison.OrdinalIgnoreCase))
+    .ToList()
+    : [];
+
+    int getColor(int index)
+       => (index * 36) % 360;
+
+    string UpperLight => "99%";
+
+    string GetListItemStyle(int index, Application application)
+    {
+        int color = getColor(index);
+        string style = $"background-color:hsl({color}deg,100%,85%);direction:ltr;min-height:4rem;";
+        if (JobApplication == application)
+        {
+            style += $"background-image:linear-gradient(90deg, hsl({color}deg,100%,85%), hsl({color}deg,100%,{UpperLight}));";
+        }
+        return style;
+    }
+
+    string? GetBackgroundColorStyle()
+    {
+        if (JobApplication is not null)
+        {
+            int index = PriorityCollection().IndexOf(JobApplication);
+            int color = getColor(index);
+            return $"background-color:hsl({color}deg,100%,{UpperLight});background-image:linear-gradient(90deg, hsl({color}deg,100%,{UpperLight}), hsl({color}deg,100%,{UpperLight}));";
+        }
+        return null;
+    }
 }

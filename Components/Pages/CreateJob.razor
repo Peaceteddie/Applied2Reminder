@@ -1,0 +1,81 @@
+@if (ShouldShow)
+{
+    <Overlay class="flex" @onclick="@(() => ShouldShow = IsInsideModal)">
+        <dialog class="flex flex-col p-1 rounded-xl translate-y-10 w-2/6" @onmouseenter="@(() => IsInsideModal = true)"
+            @onmouseleave="@(() => IsInsideModal = false)" open>
+            <header class="border-b-4 border-slate-400 content-center flex p-2 ">
+                <h2 class="flex self-center text-2xl">
+                    New Application
+                </h2>
+                <button class="border flex ms-auto me-6 my-auto p-3 rounded-full place-items-center"
+                    @onclick="@(() => ShouldShow = false)">❌</button>
+            </header>
+            <EditForm class="border-b-4 border-slate-400 flex flex-col gap-10 p-6" Model="Application"
+                OnValidSubmit="CreateApplication">
+                <ValidationSummary />
+                <div class="flex">
+                    <label class="border-4 border-e-0 p-2 pe-0 place-content-center text-end w-1/3">Name of the job:
+                    </label>
+                    <InputText @bind-Value="Application!.Name" placeholder="Job Name..." class="ms-2 ps-2" />
+                </div>
+                <div class="flex">
+                    <label class="border-4 border-e-0 p-2 pe-0 place-content-center text-end w-1/3">Description of the
+                        job:</label>
+                    <InputTextArea @bind-Value="Application.Description" placeholder="(Optional) Job Description..."
+                        class="flex flex-1 ms-2 ps-2 pt-5" />
+                </div>
+                <div class="flex">
+                    <label class="border-4 border-e-0 p-2 pe-0 place-content-center text-end w-1/3">Company
+                        Name:</label>
+                    <InputText @bind-Value="Application!.Source!.Name" placeholder="Company Name..." class="ms-2 ps-2" />
+                </div>
+                <div class="flex">
+                    <label class="border-4 border-e-0 p-2 pe-0 place-content-center text-end w-1/3">Company
+                        Type:</label>
+                    <InputSelect @bind-Value="Application.Source!.SourceType">
+                        @foreach (var sourceType in Enum.GetValues<JobSources>())
+                        {
+                            <option value="@sourceType">@sourceType</option>
+                        }
+                    </InputSelect>
+                </div>
+                <div class="flex">
+                    <label class="border-4 border-e-0 p-2 pe-0 place-content-center text-end w-1/3">Company
+                        Description:</label>
+                    <InputTextArea @bind-Value="Application!.Source!.Description" class="flex flex-1 ms-2 ps-2 pt-5"
+                        placeholder="(Optional) Company Description..." />
+                </div>
+                <div class="flex">
+                    <label class="border-4 border-e-0 p-2 pe-0 place-content-center text-end w-1/3">Company Url:</label>
+                    <InputText @bind-Value="Application!.Source!.Url" placeholder="(Optional) Company Url..."
+                        class="ms-2 ps-2" />
+                </div>
+                <div class="flex">
+                    <label class="border-4 border-e-0 p-2 pe-0 place-content-center text-end w-1/3">Job Url:</label>
+                    <InputText @bind-Value="Application!.Url" placeholder="(Optional) Job Url..." class="ms-2 ps-2" />
+                </div>
+            </EditForm>
+            <footer class="flex flex-1 h-full p-2 place-content-end">
+                <button class="bg-slate-400 border-4 border-slate-400 flex p-2 rounded-full text-white"
+                    @onclick="@(() => ShouldShow = false)">Cancel</button>
+                <button class="bg-slate-400 border-4 border-slate-400 flex p-2 rounded-full text-white"
+                    type="submit">Create</button>
+            </footer>
+        </dialog>
+    </Overlay>
+}
+@code {
+    [Parameter] public bool ShouldShow { get; set; }
+    [Parameter] public EventCallback ClearShouldShow { get; set; }
+    private Application? Application { get; set; } = new();
+    private bool IsInsideModal { get; set; }
+
+    private async Task CreateApplication()
+    {
+        if (Application is null) return;
+        using AppliedDbContext context = new();
+        context.Applications.Add(Application);
+        await context.SaveChangesAsync();
+        await ClearShouldShow.InvokeAsync();
+    }
+}

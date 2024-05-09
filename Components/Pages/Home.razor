@@ -5,6 +5,7 @@
 @rendermode InteractiveServer
 <PageTitle>Home</PageTitle>
 
+<CreateJob ShouldShow="@CreateOpen" ClearShouldShow="@(()=>CreateOpen = false)" />
 <CompanyJobs Source="@Source" ClearSourceCallback="@(()=> Source = null)" />
 
 <main class="container flex h-full">
@@ -17,7 +18,8 @@
                 <button
                     class="absolute bg-white outline outline-slate-400 rounded-full size-14 text-3xl -translate-x-full z-10">🔎</button>
                 <button
-                    class="absolute bg-white outline outline-slate-400 rounded-full self-center size-24 text-4xl -translate-x-8">+</button>
+                    class="absolute bg-white outline outline-slate-400 rounded-full self-center size-24 text-4xl -translate-x-8"
+                    @onclick="@(()=> CreateOpen = true)">+</button>
             </div>
         </div>
         <div class="container flex h-full self-center">
@@ -38,11 +40,12 @@
 </main>
 
 @code {
-    string? Search { get; set; }
     [Parameter] public int? SourceId { get; set; }
-    private JobSource? Source { get; set; }
-    private List<JobSource>? JobSources { get; set; }
-    private List<JobSource>? FilteredJobSources { get; set; }
+    bool CreateOpen { get; set; }
+    string? Search { get; set; }
+    JobSource? Source { get; set; }
+    List<JobSource>? JobSources { get; set; }
+    List<JobSource>? FilteredJobSources { get; set; }
 
     protected override async Task OnInitializedAsync()
     {
@@ -61,20 +64,20 @@
             Source = JobSources?.FirstOrDefault(s => s.Id == SourceId);
         }
     }
-    private void SearchSource()
+    void SearchSource()
     => FilteredJobSources = !string.IsNullOrEmpty(Search) ? JobSources?.Where(s => s.Name.Contains(Search,
     StringComparison.OrdinalIgnoreCase)).ToList() : null;
-    private void ShowDetails(JobSource source)
+    void ShowDetails(JobSource source)
     {
         Source = source;
         StateHasChanged();
     }
 
-    private IEnumerable<JobSource> PriorityCollection()
+    IEnumerable<JobSource> PriorityCollection()
     => FilteredJobSources?.DistinctBy(f => f.Name)
     ?? JobSources?.DistinctBy(s => s.Name)
     ?? [];
 
-    private string getColor()
+    string getColor()
     => $"hsl({new Random().Next(360)}, 100%, 85%)";
 }

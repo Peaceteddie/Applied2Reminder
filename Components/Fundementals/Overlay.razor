@@ -1,0 +1,16 @@
+@inherits ComponentBase
+@namespace Applied2Reminder
+<div class="absolute bg-black bg-opacity-50 size-full z-20 @(Adds?.FirstOrDefault(x => x.Key == "class").Value)"
+    @attributes="@Adds?.Where(x => x.Key != "class")">
+    <style>
+        body {
+            overflow: hidden;
+        }
+    </style>
+    @ChildContent
+</div>
+
+@code {
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+    [Parameter(CaptureUnmatchedValues = true)] public Dictionary<string, object>? Adds { get; set; }
+}
