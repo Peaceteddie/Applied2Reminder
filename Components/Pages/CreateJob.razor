@@ -54,10 +54,10 @@
                 </style>
                 <div class="flex place-content-end w-2/5">
                     <button class="my-auto me-6 flex place-items-center rounded-full border p-3"
-                        @onclick="@(() => ShouldShow = false)">❌</button>
+                        @onclick="@(() => ClearAndClose(false))">❌</button>
                 </div>
             </header>
-            <EditForm class="border-b-4 border-slate-400  p-6" Model="Application" OnValidSubmit="CreateApplication">
+            <EditForm class="border-b-4 border-slate-400  p-6" Model="Application" @ref="ApplicationEditForm">
                 <ValidationSummary />
                 <label class="flex flex-col gap-4 pb-4">Job details:
                     <div class="flex">
@@ -108,9 +108,9 @@
             </EditForm>
             <footer class="flex flex-1 h-full p-2 place-content-end">
                 <button class="bg-slate-400 border-4 border-slate-400 flex p-2 rounded-full text-white"
-                    @onclick="@(() => ShouldShow = false)">Cancel</button>
+                    @onclick="@(() => ClearAndClose(false))">Cancel</button>
                 <button class="bg-slate-400 border-4 border-slate-400 flex p-2 rounded-full text-white"
-                    type="submit">Create</button>
+                    @onclick="CreateApplication" type="submit">Create</button>
             </footer>
             <style>
                 @@scope {
@@ -124,18 +124,12 @@
 }
 @code {
     [Parameter] public bool ShouldShow { get; set; }
-    [Parameter] public EventCallback ClearShouldShow { get; set; }
-    private Application? Application { get; set; } = new();
+    [Parameter] public EventCallback<bool> ClearShouldShow { get; set; }
+
+    private Application Application { get; set; } = new();
+    private EditForm? ApplicationEditForm { get; set; }
+
     private bool IsInsideModal { get; set; }
-    private async Task CreateApplication()
-    {
-        if (Application is null) return;
-        using AppliedDbContext context = new();
-        context.Applications.Add(Application);
-        await context.SaveChangesAsync();
-        await ClearShouldShow.InvokeAsync();
-    }
-    string InputClass = "flex flex-1 p-4";
     private bool IsCompanyType
     {
         get => Application?.Source?.SourceType == JobSources.Company;
@@ -147,24 +141,28 @@
             }
         }
     }
-    string CompanyStyle
-    => IsCompanyType
-    ? @"
-color:#f00;
-font-size:1.2rem;
-"
-    : @"
-color:#000;
-font-size:1rem;
-";
-    string RecruiterStyle
-    => IsCompanyType
-    ? @"
-color:#000;
-font-size:1rem;
-"
-    : @"
-color:#00f;
-font-size:1.2rem;
-";
+
+    private string InputClass = "flex flex-1 p-4";
+    private string CompanyStyle => IsCompanyType ? "color:#f00;font-size:1.2rem;" : "color:#000;font-size:1rem;";
+    private string RecruiterStyle => IsCompanyType ? "color:#000;font-size:1rem;" : "color:#00f;font-size:1.2rem;";
+
+    private async Task CreateApplication()
+    {
+        if (Application is null) return;
+        if (ApplicationEditForm is null) return;
+        if (!ApplicationEditForm.EditContext!.Validate()) return;
+
+        using AppliedDbContext context = new();
+        context.Applications.Add(Application);
+        await context.SaveChangesAsync();
+        await ClearAndClose(true);
+        StateHasChanged();
+    }
+
+    private async Task ClearAndClose(bool submitted)
+    {
+        await ClearShouldShow.InvokeAsync(submitted);
+        Application = new();
+        ShouldShow = false;
+    }
 }

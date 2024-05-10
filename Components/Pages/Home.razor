@@ -5,7 +5,7 @@
 @rendermode InteractiveServer
 <PageTitle>Home</PageTitle>
 
-<CreateJob ShouldShow="@CreateOpen" ClearShouldShow="@(()=>CreateOpen = false)" />
+<CreateJob ShouldShow="@CreateOpen" ClearShouldShow="@(async (bool submitted) => await Refresh(submitted))" />
 <CompanyJobs Source="@Source" ClearSourceCallback="@(()=> Source = null)" />
 
 <main class="container flex h-full">
@@ -25,7 +25,7 @@
         <div class="container flex h-full self-center">
             @if (FilteredJobSources is not null || JobSources is not null)
             {
-                <ul class="align-content-start flex flex-row flex-wrap gap-10">
+                <ul class="place-content-start flex flex-row flex-wrap gap-10">
                     @foreach (var source in PriorityCollection())
                     {
                         <li class="cursor-pointer flex m-auto place-content-center place-items-center rounded-full size-40 text-center text-xl shadow-lg"
@@ -41,8 +41,10 @@
 
 @code {
     [Parameter] public int? SourceId { get; set; }
+
     bool CreateOpen { get; set; }
     string? Search { get; set; }
+
     JobSource? Source { get; set; }
     List<JobSource>? JobSources { get; set; }
     List<JobSource>? FilteredJobSources { get; set; }
@@ -51,8 +53,10 @@
     {
         using AppliedDbContext context = new();
         JobSources = await context.JobSources.OrderBy(s => s.Name).ToListAsync();
-    }
 
+        if (Search?.Trim() is not null or "")
+            FilteredJobSources = JobSources.Where(s => s.Name.Contains(Search, StringComparison.OrdinalIgnoreCase)).ToList();
+    }
     protected override void OnParametersSet()
     {
         if (Search is not null)
@@ -64,9 +68,24 @@
             Source = JobSources?.FirstOrDefault(s => s.Id == SourceId);
         }
     }
+
+    async Task Refresh(bool submitted)
+    {
+        CreateOpen = false;
+        if (submitted)
+        {
+            await OnInitializedAsync();
+            StateHasChanged();
+        }
+
+    }
+
     void SearchSource()
-    => FilteredJobSources = !string.IsNullOrEmpty(Search) ? JobSources?.Where(s => s.Name.Contains(Search,
-    StringComparison.OrdinalIgnoreCase)).ToList() : null;
+    {
+        FilteredJobSources = !string.IsNullOrEmpty(Search)
+        ? JobSources?.Where(s => s.Name.Contains(Search, StringComparison.OrdinalIgnoreCase)).ToList()
+        : null;
+    }
     void ShowDetails(JobSource source)
     {
         Source = source;
@@ -74,10 +93,14 @@
     }
 
     IEnumerable<JobSource> PriorityCollection()
-    => FilteredJobSources?.DistinctBy(f => f.Name)
-    ?? JobSources?.DistinctBy(s => s.Name)
-    ?? [];
+    {
+        return FilteredJobSources?.DistinctBy(f => f.Name)
+        ?? JobSources?.DistinctBy(s => s.Name)
+        ?? new List<JobSource>();
+    }
 
     string getColor()
-    => $"hsl({new Random().Next(360)}, 100%, 85%)";
+    {
+        return $"hsl({new Random().Next(360)}, 100%, 85%)";
+    }
 }
