@@ -29,7 +29,7 @@
                     @foreach (var source in PriorityCollection())
                     {
                         <li class="cursor-pointer flex m-auto place-content-center place-items-center rounded-full size-40 text-center text-xl shadow-lg"
-                            @onclick="@(()=> ShowDetails(source))" style="background-color:@(getColor());">
+                            @onclick="@(()=> ShowDetails(source))" style="background-color:@(getColor(source));">
                             @source.Name
                         </li>
                     }
@@ -99,8 +99,16 @@
         ?? new List<JobSource>();
     }
 
-    string getColor()
+    string getColor(JobSource source)
     {
-        return $"hsl({new Random().Next(360)}, 100%, 85%)";
+        switch (source.SourceType)
+        {
+            case Applied2Reminder.JobSources.Company:
+                return "#faa";
+            case Applied2Reminder.JobSources.Recruiter:
+                return "#aaf";
+            default:
+                return "#eee";
+        }
     }
 }
