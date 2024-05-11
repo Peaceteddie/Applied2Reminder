@@ -1,0 +1,64 @@
+
+
+
+
+
+<main class="container flex h-full"><div class="container flex flex-col w-full"><h1 class="flex self-center text-5xl">Home</h1>
+        <div class="flex justify-center my-4 w-full"><input blazor:oninput="2" placeholder="Search" name="Search" class="outline outline-slate-400 p-4 pe-16 rounded-full self-center w-1/2" blazor:onchange="8" blazor:elementReference=""></input>
+            <div class=" flex"><button class="absolute bg-white outline outline-slate-400 rounded-full size-14 text-3xl -translate-x-full z-10">🔎</button>
+                <button class="absolute bg-white outline outline-slate-400 rounded-full self-center size-24 text-4xl -translate-x-8" blazor:onclick="1">+</button></div></div>
+        <div class="flex place-self-center"><label for="SourceTypeCheckbox"><span>Recruiter</span></label>
+            <input id="SourceTypeCheckbox" type="checkbox" name="IsChecked" class="" value="True" blazor:onchange="7" blazor:elementReference=""></input>
+            <label for="SourceTypeCheckbox"><span>Company</span></label>
+            <style>@scope {
+
+                    /* Modern checkbox style */
+                    #SourceTypeCheckbox {
+                        -webkit-appearance: none;
+                        -moz-appearance: none;
+                        appearance: none;
+                        width: 20px;
+                        height: 20px;
+                        border: 2px solid #ccc;
+                        border-radius: 50%;
+                        outline: none;
+                        transition: border-color 0.3s;
+                        position: relative;
+                    }
+
+                    #SourceTypeCheckbox:checked {
+                        border-color: #4CAF50;
+                        /* Color for Company state */
+                    }
+
+                    #SourceTypeCheckbox:indeterminate {
+                        border-color: #FFC107;
+                        /* Color for Indeterminate state */
+                    }
+
+                    #SourceTypeCheckbox:checked:after {
+                        content: '\2713';
+                        /* Checkmark symbol */
+                        font-size: 16px;
+                        position: absolute;
+                        top: 50%;
+                        left: 50%;
+                        transform: translate(-50%, -50%);
+                        color: #4CAF50;
+                        /* Color for Company state */
+                    }
+
+                    #SourceTypeCheckbox:indeterminate:after {
+                        content: '\2012';
+                        /* Minus symbol for Indeterminate state */
+                        font-size: 16px;
+                        position: absolute;
+                        top: 50%;
+                        left: 50%;
+                        transform: translate(-50%, -50%);
+                        color: #FFC107;
+                        /* Color for Indeterminate state */
+                    }
+                }
+            </style></div>
+        <div class="container flex h-full self-center"></div></div></main>

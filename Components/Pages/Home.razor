@@ -2,6 +2,7 @@
 @using System.Linq
 @using Applied2Reminder
 @using Microsoft.EntityFrameworkCore
+@using Xunit
 @rendermode InteractiveServer
 <PageTitle>Home</PageTitle>
 
@@ -21,6 +22,61 @@
                     class="absolute bg-white outline outline-slate-400 rounded-full self-center size-24 text-4xl -translate-x-8"
                     @onclick="@(()=> CreateOpen = true)">+</button>
             </div>
+        </div>
+        <div class="flex h-16 place-items-center place-self-center">
+            <label for="SourceTypeCheckbox" class="p-2 rounded-full"
+                style="@(!IsChecked && !IsIndeterminate ? "background-color: #aaf;":"")">Recruiter</label>
+            <div>
+                <input type="checkbox" indeterminate="@IsIndeterminate.ToString().ToLower()"
+                    value="@IsChecked.ToString().ToLower()" />
+                <button id="SourceTypeCheckbox" @onclick="HandleCheckboxClick">
+                </button>
+            </div>
+            <label for="SourceTypeCheckbox" class="p-2 rounded-full"
+                style="@(IsChecked && !IsIndeterminate ? "background-color: #faa;" : "")">Company</label>
+            <style>
+                @@scope {
+                    input[type="checkbox"] {
+                        display: none;
+                    }
+
+                    button {
+                        background-color: #ddd;
+                        border-radius: 1rem;
+                        display: inline-block;
+                        height: 2rem;
+                        position: relative;
+                        width: 4rem;
+                    }
+
+                    button::after {
+                        background-color: #fff;
+                        border-radius: 50%;
+                        content: "";
+                        display: block;
+                        height: 1.5rem;
+                        left: 0.25rem;
+                        position: absolute;
+                        top: 0.25rem;
+                        transition: transform 0.3s;
+                        width: 1.5rem;
+                    }
+
+                    input[value="true"][indeterminate="false"]+button::after {
+                        background-color: #faa;
+                        transform: translateX(2rem);
+                    }
+
+                    input[indeterminate="true"]+button::after {
+                        transform: translateX(1rem);
+                    }
+
+                    input[value="false"][indeterminate="false"]+button::after {
+                        background-color: #aaf;
+                        transform: translateX(0rem);
+                    }
+                }
+            </style>
         </div>
         <div class="container flex h-full self-center">
             @if (FilteredJobSources is not null || JobSources is not null)
@@ -42,7 +98,9 @@
 @code {
     [Parameter] public int? SourceId { get; set; }
 
+    bool IsChecked = false;
     bool CreateOpen { get; set; }
+    bool IsIndeterminate = true;
     string? Search { get; set; }
 
     JobSource? Source { get; set; }
@@ -80,6 +138,12 @@
 
     }
 
+    void HandleCheckboxClick(MouseEventArgs _)
+    {
+        IsChecked = IsIndeterminate ? !IsChecked : IsChecked;
+        IsIndeterminate = !IsIndeterminate;
+        StateHasChanged();
+    }
     void SearchSource()
     {
         FilteredJobSources = !string.IsNullOrEmpty(Search)

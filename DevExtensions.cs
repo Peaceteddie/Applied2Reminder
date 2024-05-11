@@ -2,6 +2,7 @@ using System.Collections;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
+
 public static class DevExtensions
 {
     static readonly JsonSerializerOptions options = new()
@@ -10,7 +11,7 @@ public static class DevExtensions
         ReferenceHandler = ReferenceHandler.Preserve
     };
 
-    public static T Inspect<T>(this T obj)
+    public static T Inspect<T>(this T obj) where T : class?
     {
         switch (obj)
         {
@@ -19,13 +20,28 @@ public static class DevExtensions
                 break;
             case IEnumerable enumerableValue:
                 foreach (var item in enumerableValue)
-                    Console.WriteLine(JsonSerializer.Serialize(item, options));
+                    try
+                    {
+                        Console.WriteLine(JsonSerializer.Serialize(item, options));
+                    }
+                    catch
+                    {
+                        Console.WriteLine(item);
+
+                    }
                 break;
             default:
-                Console.WriteLine(JsonSerializer.Serialize(obj, options));
+                try
+                {
+                    Console.WriteLine(JsonSerializer.Serialize(obj, options));
+                }
+                catch
+                {
+                    Console.WriteLine(obj);
+                }
                 break;
         }
 
-        return (T)obj;
+        return obj;
     }
 }
