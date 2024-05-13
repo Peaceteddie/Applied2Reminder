@@ -153,6 +153,9 @@
         if (!ApplicationEditForm.EditContext!.Validate()) return;
 
         using AppliedDbContext context = new();
+
+        Application.Source = context.JobSources.FirstOrDefault(s => s.Name == Application.Source!.Name) ?? Application.Source;
+
         context.Applications.Add(Application);
         await context.SaveChangesAsync();
         await ClearAndClose(true);
