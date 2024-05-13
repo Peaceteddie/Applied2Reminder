@@ -2,7 +2,7 @@
   "scripts": {
     "build": "npm install && npm run build:css",
     "build:css": "npx tailwind build -i ./wwwroot/css/app.css -o ./wwwroot/css/app.min.css --minify --watch",
-    "run:build:infinity": "powershell -c for ($i=1; $i -le 50; $i++) { npm run build }; while($true) { npm run build }"
+    "run:build:infinity": "powershell -c while($true) { npm run build }"
   },
   "dependencies": {
     "autoprefixer": "^10.4.19",

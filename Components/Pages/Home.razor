@@ -1,4 +1,4 @@
-﻿@page "/{sourceId:int?}"
+﻿@page "/{selectedsource?}"
 @using System.Linq
 @using Applied2Reminder
 @using Microsoft.EntityFrameworkCore
@@ -96,7 +96,7 @@
 </main>
 
 @code {
-    [Parameter] public int? SourceId { get; set; }
+    [Parameter] public string? SelectedSource { get; set; }
 
     bool IsChecked = false;
     bool CreateOpen { get; set; }
@@ -121,9 +121,9 @@
         {
             FilteredJobSources = JobSources?.Where(s => s.Name.Contains(Search, StringComparison.OrdinalIgnoreCase)).ToList();
         }
-        else if (SourceId is not null)
+        else if (SelectedSource is not null)
         {
-            Source = JobSources?.FirstOrDefault(s => s.Id == SourceId);
+            Source = JobSources?.FirstOrDefault(s => string.Equals(s.Name, SelectedSource, StringComparison.OrdinalIgnoreCase));
         }
     }
 

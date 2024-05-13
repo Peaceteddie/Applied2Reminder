@@ -1,62 +1,62 @@
 @using Microsoft.EntityFrameworkCore
 @if (Source is not null)
 {
-        <Overlay class="flex"
-            @onclick="@((e) =>{if(!IsInsideModal){Source = null; ClearSourceCallback.InvokeAsync().Wait();}})">
-            <dialog class="absolute flex place-self-center rounded-3xl size-2/3 top-20"
-                @onmouseenter="@((e) => IsInsideModal = true)" @onmouseleave="@((e) => IsInsideModal = false)" open>
-                <div class="flex flex-col p-4 pb-10 w-full">
-                    <h1 class="flex place-content-center text-4xl text-center">@Source.Name</h1>
-                    <div class="container flex flex-row size-full">
-                        <div class="flex flex-col w-1/3">
-                            <div class="flex ms-6 self-center">
-                                <InputText @bind-Value="Search" placeholder="Search" @oninput="SearchApplications"
-                                    class="outline outline-slate-400 p-4 pe-16 rounded-full self-center" />
+            <Overlay class="flex"
+                @onclick="@((e) =>{if(!IsInsideModal){Source = null; ClearSourceCallback.InvokeAsync().Wait();}})">
+                <dialog class="absolute flex place-self-center rounded-3xl size-2/3 top-20"
+                    @onmouseenter="@((e) => IsInsideModal = true)" @onmouseleave="@((e) => IsInsideModal = false)" open>
+                    <div class="flex flex-col p-4 pb-10 w-full">
+                        <h1 class="flex place-content-center text-4xl text-center">@Source.Name</h1>
+                        <div class="container flex flex-row size-full">
+                            <div class="flex flex-col w-1/3">
+                                <div class="flex ms-6 self-center">
+                                    <InputText @bind-Value="Search" placeholder="Search" @oninput="SearchApplications"
+                                        class="outline outline-slate-400 p-4 pe-16 rounded-full self-center" />
 
-                                <div class=" flex">
-                                    <button
-                                        class="absolute bg-white outline outline-slate-400 rounded-full size-14 text-3xl -translate-x-full z-10"
-                                        @onclick="SearchApplications">🔎</button>
+                                    <div class=" flex">
+                                        <button
+                                            class="absolute bg-white outline outline-slate-400 rounded-full size-14 text-3xl -translate-x-full z-10"
+                                            @onclick="SearchApplications">🔎</button>
+                                    </div>
                                 </div>
-                            </div>
 
-                            <ul class="flex flex-col gap-4 items-center max-h-full overflow-y-auto pe-4 py-5"
-                                style="direction:rtl;mask:linear-gradient(0deg, #0000, #000 5%, #000 95%, #0000);scrollbar-width:thin;">
+                                <ul class="flex flex-col gap-4 items-center max-h-full overflow-y-auto pe-4 py-5"
+                                    style="direction:rtl;mask:linear-gradient(0deg, #0000, #000 5%, #000 95%, #0000);scrollbar-width:thin;">
                             @if (Applications is not null)
                             {
                                 int i = 0;
                                 @foreach (var application in PriorityCollection())
                                 {
-                                                <li class="border-4 @(JobApplication == application ? "border-e-0":"") border-black cursor-pointer flex overflow-hidden ps-4 place-items-center place-self-end text-ellipsis text-nowrap text-start w-full"
-                                                    @onclick="()=> ShowDetails(application)" style="@(GetListItemStyle(i, application))">
+                                                            <li class="border-4 @(JobApplication == application ? "border-e-0":"") border-black cursor-pointer flex overflow-hidden ps-4 place-items-center place-self-end text-ellipsis text-nowrap text-start w-full"
+                                                                @onclick="()=> ShowDetails(application)" style="@(GetListItemStyle(i, application))">
                                         @application.Name
-                                                </li>
+                                                            </li>
                                     i++;
                                 }
                             }
-                            </ul>
-                        </div>
+                                </ul>
+                            </div>
 
-                        <div class="outline p-10 rounded-3xl size-full" style="@(GetBackgroundColorStyle())">
+                            <div class="outline p-10 rounded-3xl size-full" style="@(GetBackgroundColorStyle())">
                         @if (JobApplication is not null)
                         {
-                                    <div>
-                                        <h1>@JobApplication.Name</h1>
-                                        <p>@JobApplication.Description</p>
-                                    </div>
+                                            <div>
+                                                <h1>@JobApplication.Name</h1>
+                                                <p>@JobApplication.Description</p>
+                                            </div>
                         }
+                            </div>
                         </div>
                     </div>
-                </div>
-            </dialog>
-        </Overlay>
+                </dialog>
+            </Overlay>
 
-        <style>
-            li{
-                border-top-left-radius: 10rem;
-                border-bottom-left-radius: 10rem;
-            }
-        </style>
+            <style>
+                li{
+                    border-top-left-radius: 10rem;
+                    border-bottom-left-radius: 10rem;
+                }
+            </style>
 }
 
 
@@ -74,16 +74,16 @@
 
     protected override async Task OnInitializedAsync()
     => await GetApplicationsAsync();
+    protected override async Task OnParametersSetAsync()
+    => await GetApplicationsAsync();
     async Task GetApplicationsAsync()
     {
         if (Source is not null)
         {
             using AppliedDbContext context = new();
-            Applications = await context.Applications.Where(a => a.Source!.Id == Source.Id).ToListAsync();
+            Applications = await context.Applications.Where(a => a.Source!.Name == Source.Name).ToListAsync();
         }
     }
-    protected override async Task OnParametersSetAsync()
-    => await GetApplicationsAsync();
 
     List<Application> PriorityCollection()
        => FilteredApplications
@@ -94,7 +94,7 @@
        => JobApplication = application;
 
     void SearchApplications()
-    => FilteredApplications = Search != null
+    => FilteredApplications = Search is not null or ""
     ? Applications?
     .Where(a => a.Name!.Contains(Search, StringComparison.OrdinalIgnoreCase))
     .ToList()
